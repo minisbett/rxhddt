@@ -33,10 +33,10 @@ namespace RXHDDT
         ("Double Time","DT", 6, OsuHelper.Mods.DoubleTime, '2'),
         ("Hidden","HD", 4, OsuHelper.Mods.Hidden, '3'),
         ("Hard Rock", "HR", 3, OsuHelper.Mods.HardRock, '4'),
-        ("Nightcore","NC", 7, OsuHelper.Mods.Nightcore, '5'),
+        ("Nightcore","NC", 6, OsuHelper.Mods.Nightcore, '5'),
         ("Flashlight","FL", 2, OsuHelper.Mods.Flashlight, '6'),
         ("Easy", "EZ", 1, OsuHelper.Mods.Easy, '7'),
-        ("No Fail", "NF", 8, OsuHelper.Mods.NoFail, '8'),
+        ("No Fail", "NF", 7, OsuHelper.Mods.NoFail, '8'),
         ("Half Time", "HT", 5, OsuHelper.Mods.HalfTime, '9'),
       };
 
@@ -50,10 +50,11 @@ namespace RXHDDT
       {
         Console.SetCursorPosition(0, 0);
         Console.WriteLine("Select the mods. Press enter to continue.");
-        Console.WriteLine("Nightcore does not speed up the actual replay. If you want to simulate NC select both DoubleTime and Nightcore.");
         Console.WriteLine();
 
-        string strSelectedMods = string.Join("", selectedMods.OrderBy(x => x.priority).ToList().Select(x => x.shortname));
+        string[] mods = selectedMods.OrderBy(x => x.priority).Select(x => x.shortname).ToArray();
+        mods = mods.Where(x => x != "DT" || !mods.Contains("NC")).ToArray(); // remove DT if NC is enabled so it doesn't show "DTNC"
+        string strSelectedMods = string.Join("", mods);
         Console.WriteLine(("Selected mods: " + strSelectedMods).PadRight(Console.WindowWidth - 1));
 
         Console.WriteLine();
@@ -77,10 +78,18 @@ namespace RXHDDT
           var selectedMod = availableMods.FirstOrDefault(x => x.key == cki.KeyChar);
           if (selectedMod.fullname != "")
           {
+            if (selectedMod.mod == OsuHelper.Mods.Nightcore && selectedMods.Any(x => x.mod == OsuHelper.Mods.DoubleTime))
+              selectedMods.Remove(availableMods.First(x => x.mod == OsuHelper.Mods.DoubleTime));
+            if (selectedMod.mod == OsuHelper.Mods.DoubleTime && selectedMods.Any(x => x.mod == OsuHelper.Mods.Nightcore))
+              selectedMods.Remove(availableMods.First(x => x.mod == OsuHelper.Mods.Nightcore));
             if (selectedMods.Contains(selectedMod))
               selectedMods.Remove(selectedMod);
             else
+            {
+              if (selectedMod.mod == OsuHelper.Mods.Nightcore && !selectedMods.Any(x => x.mod == OsuHelper.Mods.DoubleTime))
+                selectedMods.Add(availableMods.First(x => x.mod == OsuHelper.Mods.DoubleTime));
               selectedMods.Add(selectedMod);
+            }
           }
         }
       }
@@ -108,18 +117,21 @@ namespace RXHDDT
     static ReplayFile flipNotes(ReplayFile replay)
     {
       Console.Clear();
-      Console.WriteLine("Flipping notes (Hardrock change)...");
-      List<string> list = ((IEnumerable<string>)Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(',')).ToList();
-      for (int index = 0; index < list.Count; ++index)
+      Console.WriteLine("Flipping notes (HR was toggled)...");
+      string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(','));
+      for (int index = 0; index < list.Length; index++)
       {
-        int percentage = (int)((double)index / list.Count * 100);
+        int percentage = (int)((double)index / list.Length * 100);
         Console.SetCursorPosition(0, 1);
         Console.WriteLine(percentage.ToString().PadLeft(3) + "% done.");
+
         string[] strArray = list[index].Split('|');
         if (strArray.Length == 4)
         {
-          double num = 384.0 - (double)Convert.ToSingle(strArray[2], (IFormatProvider)new CultureInfo("en-US").NumberFormat);
-          strArray[2] = num.ToString((IFormatProvider)new CultureInfo("en-US").NumberFormat);
+          double num = 384.0 - double.Parse(strArray[2], new CultureInfo("en-US"));
+          strArray[2] = num.ToString(new CultureInfo("en-US"));
+          strArray[1] = "300";
+          strArray[2] = "300";
           list[index] = string.Join("|", strArray);
         }
       }

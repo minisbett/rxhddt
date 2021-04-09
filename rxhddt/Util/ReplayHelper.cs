@@ -4,10 +4,12 @@
 // MVID: 43BAB63D-DE2A-4E38-86D4-2EF193F865F8
 // Assembly location: C:\Users\Niklas\Downloads\aac_Portable\osu!\osu!ftw.exe
 
+using SevenZip.Compression.LZMA;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace RXHDDT.Util
 {
@@ -66,6 +68,7 @@ namespace RXHDDT.Util
         beatmapWriter.Write(replay.UsedMods);
         beatmapWriter.Write(replay.PerformanceGraphData);
         beatmapWriter.Write(replay.ReplayDate);
+        string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(','));
         beatmapWriter.Write(replay.Replay);
         beatmapWriter.Write(replay.Long0);
       }
