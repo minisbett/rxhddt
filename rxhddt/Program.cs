@@ -130,8 +130,6 @@ namespace RXHDDT
         {
           double num = 384.0 - double.Parse(strArray[2], new CultureInfo("en-US"));
           strArray[2] = num.ToString(new CultureInfo("en-US"));
-          strArray[1] = "300";
-          strArray[2] = "300";
           list[index] = string.Join("|", strArray);
         }
       }
