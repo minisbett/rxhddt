@@ -110,6 +110,7 @@ namespace RXHDDT
         File.Delete(sfd.FileName);
       Console.Clear();
       Console.WriteLine("Saving replay...");
+      replay.ReplayDate = DateTime.UtcNow; // fix replay data cache problem
       replay.ReplayHash = ReplayHelper.GetReplayHash(replay);
       ReplayHelper.SaveFile(sfd.FileName, replay);
     }
