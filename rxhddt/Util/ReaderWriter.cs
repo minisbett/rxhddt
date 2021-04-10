@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace RXHDDT.Util
 {
-  internal class BeatmapWriter : BinaryWriter
+  internal class ReplayWriter : BinaryWriter
   {
-    public BeatmapWriter(Stream fileStream)
+    public ReplayWriter(Stream fileStream)
       : base(fileStream, Encoding.UTF8)
     {
 
@@ -17,12 +15,10 @@ namespace RXHDDT.Util
     public override void Write(string value)
     {
       if (value == null)
-      {
-        this.Write((byte)0);
-      }
+        Write((byte)0);
       else
       {
-        this.Write((byte)11);
+        Write((byte)11);
         base.Write(value);
       }
     }
@@ -30,13 +26,11 @@ namespace RXHDDT.Util
     public override void Write(byte[] buffer)
     {
       if (buffer == null)
-      {
-        this.Write(-1);
-      }
+        Write(-1);
       else
       {
         int length = buffer.Length;
-        this.Write(length);
+        Write(length);
         if (length <= 0)
           return;
         base.Write(buffer);
@@ -45,7 +39,7 @@ namespace RXHDDT.Util
 
     public void Write(DateTime dateTime)
     {
-      this.Write(dateTime.ToUniversalTime().Ticks);
+      Write(dateTime.ToUniversalTime().Ticks);
     }
 
     public void NormalWrite(byte[] byte_0)

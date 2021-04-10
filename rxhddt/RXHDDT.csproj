@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-  	<Compile Include="SevenZip\CRC.cs" />
+    <Compile Include="SevenZip\CRC.cs" />
     <Compile Include="SevenZip\CDoubleStream.cs" />
     <Compile Include="SevenZip\LzmaAlone.cs" />
     <Compile Include="SevenZip\LzmaBench.cs" />
@@ -81,8 +81,8 @@
     <Compile Include="SevenZip\CommandLineParser\CommandSubCharsSet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\BeatmapReader.cs" />
-    <Compile Include="Util\BeatmapWriter.cs" />
+    <Compile Include="Util\ReplayReader.cs" />
+    <Compile Include="Util\ReaderWriter.cs" />
     <Compile Include="Util\OsuHelper.cs" />
     <Compile Include="Util\ReplayHelper.cs" />
   </ItemGroup>

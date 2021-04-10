@@ -118,7 +118,7 @@ namespace RXHDDT
     {
       Console.Clear();
       Console.WriteLine("Flipping notes (HR was toggled)...");
-      string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(','));
+      string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(',');
       for (int index = 0; index < list.Length; index++)
       {
         int percentage = (int)((double)index / list.Length * 100);

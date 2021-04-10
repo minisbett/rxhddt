@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,7 +27,7 @@ namespace RXHDDT.Util
       }
       char[] destination = new char[hash.Length * 2];
       for (int index = 0; index < hash.Length; ++index)
-        hash[index].ToString("x2", (IFormatProvider)new CultureInfo("en-US", false).NumberFormat).CopyTo(0, destination, index * 2, 2);
+        hash[index].ToString("x2", new CultureInfo("en-US", false).NumberFormat).CopyTo(0, destination, index * 2, 2);
       return new string(destination);
     }
 
@@ -41,7 +40,7 @@ namespace RXHDDT.Util
           return string.Empty;
         try
         {
-          using (Stream inputStream = (Stream)File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+          using (Stream inputStream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
           {
             byte[] hash = md5.ComputeHash(inputStream);
             StringBuilder stringBuilder = new StringBuilder();
@@ -50,7 +49,7 @@ namespace RXHDDT.Util
             return stringBuilder.ToString();
           }
         }
-        catch (Exception ex)
+        catch
         {
           return string.Empty;
         }
@@ -62,9 +61,9 @@ namespace RXHDDT.Util
       switch (rf.Mode)
       {
         case 2:
-          return (int)rf.Count50 + (int)rf.Count100 + (int)rf.Count300;
+          return rf.Count50 + rf.Count100 + rf.Count300;
         case 3:
-          return (int)rf.Count50 + (int)rf.Count100 + (int)rf.Count300 + (int)rf.CountGeki + (int)rf.CountKatu;
+          return rf.Count50 + rf.Count100 + rf.Count300 + rf.CountGeki + rf.CountKatu;
         default:
           return 0;
       }
@@ -75,11 +74,11 @@ namespace RXHDDT.Util
       switch (rf.Mode)
       {
         case 2:
-          return (int)rf.Count50 + (int)rf.Count100 + (int)rf.Count300 + (int)rf.CountMiss + (int)rf.CountKatu;
+          return rf.Count50 + rf.Count100 + rf.Count300 + rf.CountMiss + rf.CountKatu;
         case 3:
-          return (int)rf.Count50 + (int)rf.Count100 + (int)rf.Count300 + (int)rf.CountMiss + (int)rf.CountGeki + (int)rf.CountKatu;
+          return rf.Count50 + rf.Count100 + rf.Count300 + rf.CountMiss + rf.CountGeki + rf.CountKatu;
         default:
-          return (int)rf.Count50 + (int)rf.Count100 + (int)rf.Count300 + (int)rf.CountMiss;
+          return rf.Count50 + rf.Count100 + rf.Count300 + rf.CountMiss;
       }
     }
 
@@ -88,93 +87,93 @@ namespace RXHDDT.Util
       switch (rf.Mode)
       {
         case 1:
-          if (OsuHelper.GetTotalHits(rf) <= 0)
+          if (GetTotalHits(rf) <= 0)
             return 0.0f;
-          return (float)((int)rf.Count100 * 150 + (int)rf.Count300 * 300) / (float)(OsuHelper.GetTotalHits(rf) * 300);
+          return (rf.Count100 * 150 + rf.Count300 * 300) / (float)(GetTotalHits(rf) * 300);
         case 2:
-          if (OsuHelper.GetTotalHits(rf) == 0)
+          if (GetTotalHits(rf) == 0)
             return 1f;
-          return (float)OsuHelper.GetHits(rf) / (float)OsuHelper.GetTotalHits(rf);
+          return GetHits(rf) / GetTotalHits(rf);
         case 3:
-          if (OsuHelper.GetTotalHits(rf) == 0)
+          if (GetTotalHits(rf) == 0)
             return 1f;
-          return (float)((int)rf.Count50 * 50 + (int)rf.Count100 * 100 + (int)rf.CountKatu * 200 + ((int)rf.Count300 + (int)rf.CountGeki) * 300) / (float)(OsuHelper.GetTotalHits(rf) * 300);
+          return (rf.Count50 * 50 + rf.Count100 * 100 + rf.CountKatu * 200 + (rf.Count300 + rf.CountGeki) * 300) / (float)(GetTotalHits(rf) * 300);
         default:
-          if (OsuHelper.GetTotalHits(rf) <= 0)
+          if (GetTotalHits(rf) <= 0)
             return 0.0f;
-          return (float)((int)rf.Count50 * 50 + (int)rf.Count100 * 100 + (int)rf.Count300 * 300) / (float)(OsuHelper.GetTotalHits(rf) * 300);
+          return (rf.Count50 * 50 + rf.Count100 * 100 + rf.Count300 * 300) / (float)(GetTotalHits(rf) * 300);
       }
     }
 
-    public static OsuHelper.Rankings GetRanking(ReplayFile rf)
+    public static Rankings GetRanking(ReplayFile rf)
     {
       if (!rf.Passed)
-        return OsuHelper.Rankings.F;
-      bool flag1 = OsuHelper.ContainsMods((OsuHelper.Mods)rf.UsedMods, OsuHelper.Mods.Hidden | OsuHelper.Mods.Flashlight);
-      bool flag2 = OsuHelper.ContainsMods((OsuHelper.Mods)rf.UsedMods, OsuHelper.Mods.Hidden | OsuHelper.Mods.Flashlight | OsuHelper.Mods.FadeIn);
-      float accuracy = OsuHelper.GetAccuracy(rf);
+        return Rankings.F;
+      bool flag1 = ContainsMods((Mods)rf.UsedMods, Mods.Hidden | Mods.Flashlight);
+      bool flag2 = ContainsMods((Mods)rf.UsedMods, Mods.Hidden | Mods.Flashlight | Mods.FadeIn);
+      float accuracy = GetAccuracy(rf);
       switch (rf.Mode)
       {
         case 1:
-          float num1 = (float)rf.Count300 / (float)OsuHelper.GetTotalHits(rf);
-          float num2 = (float)rf.Count50 / (float)OsuHelper.GetTotalHits(rf);
-          if ((double)num1 == 1.0)
-            return flag1 ? OsuHelper.Rankings.XH : OsuHelper.Rankings.X;
-          if ((double)num1 > 0.9 && (double)num2 <= 0.01 && rf.CountMiss == (ushort)0)
-            return flag1 ? OsuHelper.Rankings.SH : OsuHelper.Rankings.S;
-          if ((double)num1 > 0.8 && rf.CountMiss == (ushort)0 || (double)num1 > 0.9)
-            return OsuHelper.Rankings.A;
-          if ((double)num1 > 0.7 && rf.CountMiss == (ushort)0 || (double)num1 > 0.8)
-            return OsuHelper.Rankings.B;
-          return (double)num1 <= 0.6 ? OsuHelper.Rankings.D : OsuHelper.Rankings.C;
+          float num1 = rf.Count300 / GetTotalHits(rf);
+          float num2 = rf.Count50 / GetTotalHits(rf);
+          if (num1 == 1.0)
+            return flag1 ? Rankings.XH : Rankings.X;
+          if (num1 > 0.9 && num2 <= 0.01 && rf.CountMiss == 0)
+            return flag1 ? Rankings.SH : Rankings.S;
+          if (num1 > 0.8 && rf.CountMiss == 0 || num1 > 0.9)
+            return Rankings.A;
+          if (num1 > 0.7 && rf.CountMiss == 0 || num1 > 0.8)
+            return Rankings.B;
+          return num1 <= 0.6 ? Rankings.D : Rankings.C;
         case 2:
-          if ((double)accuracy == 1.0)
-            return flag1 ? OsuHelper.Rankings.XH : OsuHelper.Rankings.X;
-          if ((double)accuracy > 0.98)
-            return flag1 ? OsuHelper.Rankings.SH : OsuHelper.Rankings.S;
-          if ((double)accuracy > 0.94)
-            return OsuHelper.Rankings.A;
-          if ((double)accuracy > 0.9)
-            return OsuHelper.Rankings.B;
-          return (double)accuracy <= 0.85 ? OsuHelper.Rankings.D : OsuHelper.Rankings.C;
+          if (accuracy == 1.0)
+            return flag1 ? Rankings.XH : Rankings.X;
+          if (accuracy > 0.98)
+            return flag1 ? Rankings.SH : Rankings.S;
+          if (accuracy > 0.94)
+            return Rankings.A;
+          if (accuracy > 0.9)
+            return Rankings.B;
+          return accuracy <= 0.85 ? Rankings.D : Rankings.C;
         case 3:
-          if ((double)accuracy == 1.0)
-            return flag2 ? OsuHelper.Rankings.XH : OsuHelper.Rankings.X;
-          if ((double)accuracy > 0.95)
-            return flag2 ? OsuHelper.Rankings.SH : OsuHelper.Rankings.S;
-          if ((double)accuracy > 0.9)
-            return OsuHelper.Rankings.A;
-          if ((double)accuracy > 0.8)
-            return OsuHelper.Rankings.B;
-          return (double)accuracy <= 0.7 ? OsuHelper.Rankings.D : OsuHelper.Rankings.C;
+          if (accuracy == 1.0)
+            return flag2 ? Rankings.XH : Rankings.X;
+          if (accuracy > 0.95)
+            return flag2 ? Rankings.SH : Rankings.S;
+          if (accuracy > 0.9)
+            return Rankings.A;
+          if (accuracy > 0.8)
+            return Rankings.B;
+          return accuracy <= 0.7 ? Rankings.D : Rankings.C;
         default:
-          float num3 = (float)rf.Count50 / (float)OsuHelper.GetTotalHits(rf);
-          if ((double)accuracy == 1.0 && rf.FullCombo)
-            return flag1 ? OsuHelper.Rankings.XH : OsuHelper.Rankings.X;
-          if ((double)accuracy > 0.9 && (double)num3 <= 0.01 && rf.FullCombo)
-            return flag1 ? OsuHelper.Rankings.SH : OsuHelper.Rankings.S;
-          if ((double)accuracy > 0.8 && rf.FullCombo || (double)accuracy > 0.9)
-            return OsuHelper.Rankings.A;
-          if ((double)accuracy > 0.7 && rf.FullCombo || (double)accuracy > 0.8)
-            return OsuHelper.Rankings.B;
-          return (double)OsuHelper.GetAccuracy(rf) <= 0.6 ? OsuHelper.Rankings.D : OsuHelper.Rankings.C;
+          float num3 = rf.Count50 / GetTotalHits(rf);
+          if (accuracy == 1.0 && rf.FullCombo)
+            return flag1 ? Rankings.XH : Rankings.X;
+          if (accuracy > 0.9 && num3 <= 0.01 && rf.FullCombo)
+            return flag1 ? Rankings.SH : Rankings.S;
+          if (accuracy > 0.8 && rf.FullCombo || accuracy > 0.9)
+            return Rankings.A;
+          if (accuracy > 0.7 && rf.FullCombo || accuracy > 0.8)
+            return Rankings.B;
+          return GetAccuracy(rf) <= 0.6 ? Rankings.D : Rankings.C;
       }
     }
 
-    private static bool ContainsMods(OsuHelper.Mods allMods, OsuHelper.Mods modsToCheck)
+    private static bool ContainsMods(Mods allMods, Mods modsToCheck)
     {
       return (uint)(allMods & modsToCheck) > 0U;
     }
 
     public static string GetPath()
     {
-      string str = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\osu!\\DefaultIcon")?.GetValue((string)null).ToString();
+      string str = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\osu!\\DefaultIcon")?.GetValue(null).ToString();
       return str?.Substring(1, str.Length - 4);
     }
 
     public static int GetLastOsuVersion()
     {
-      return OsuHelper.GetLastOsuVersion(OsuHelper.GetPath());
+      return GetLastOsuVersion(GetPath());
     }
 
     public static int GetLastOsuVersion(string path)
@@ -187,11 +186,11 @@ namespace RXHDDT.Util
           {
             string str = streamReader.ReadLine();
             if (str != null && str.StartsWith("LastVersion"))
-              return int.Parse(((IEnumerable<string>)str.Split('=')).Last<string>().Trim().Substring(1, 8));
+              return int.Parse(str.Split('=').Last().Trim().Substring(1, 8));
           }
         }
       }
-      catch (Exception ex)
+      catch
       {
       }
       return 0;

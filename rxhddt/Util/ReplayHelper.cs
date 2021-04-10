@@ -9,41 +9,42 @@ namespace RXHDDT.Util
 {
   public class ReplayHelper
   {
-    private static BeatmapReader _reader;
+    private static ReplayReader _reader;
 
     public static ReplayFile ReadFile(string filePath)
     {
       ReplayFile replayFile = new ReplayFile();
-      using (ReplayHelper._reader = new BeatmapReader((Stream)File.Open(filePath, FileMode.Open)))
+      using (_reader = new ReplayReader(File.Open(filePath, FileMode.Open)))
       {
         replayFile.Passed = true;
-        replayFile.Mode = ReplayHelper._reader.ReadByte();
-        replayFile.Version = ReplayHelper._reader.ReadInt32();
-        replayFile.BeatmapHash = ReplayHelper._reader.ReadString();
-        replayFile.PlayerName = ReplayHelper._reader.ReadString();
-        replayFile.ReplayHash = ReplayHelper._reader.ReadString();
-        replayFile.Count300 = ReplayHelper._reader.ReadUInt16();
-        replayFile.Count100 = ReplayHelper._reader.ReadUInt16();
-        replayFile.Count50 = ReplayHelper._reader.ReadUInt16();
-        replayFile.CountGeki = ReplayHelper._reader.ReadUInt16();
-        replayFile.CountKatu = ReplayHelper._reader.ReadUInt16();
-        replayFile.CountMiss = ReplayHelper._reader.ReadUInt16();
-        replayFile.Score = ReplayHelper._reader.ReadInt32();
-        replayFile.MaxCombo = ReplayHelper._reader.ReadUInt16();
-        replayFile.FullCombo = ReplayHelper._reader.ReadBoolean();
-        replayFile.UsedMods = ReplayHelper._reader.ReadInt32();
-        replayFile.PerformanceGraphData = ReplayHelper._reader.ReadString();
-        replayFile.ReplayDate = ReplayHelper._reader.ReadDateTime();
-        replayFile.Replay = ReplayHelper._reader.ReadByteArray();
+        replayFile.Mode = _reader.ReadByte();
+        replayFile.Version = _reader.ReadInt32();
+        replayFile.BeatmapHash = _reader.ReadString();
+        replayFile.PlayerName = _reader.ReadString();
+        replayFile.ReplayHash = _reader.ReadString();
+        replayFile.Count300 = _reader.ReadUInt16();
+        replayFile.Count100 = _reader.ReadUInt16();
+        replayFile.Count50 = _reader.ReadUInt16();
+        replayFile.CountGeki = _reader.ReadUInt16();
+        replayFile.CountKatu = _reader.ReadUInt16();
+        replayFile.CountMiss = _reader.ReadUInt16();
+        replayFile.Score = _reader.ReadInt32();
+        replayFile.MaxCombo = _reader.ReadUInt16();
+        replayFile.FullCombo = _reader.ReadBoolean();
+        replayFile.UsedMods = _reader.ReadInt32();
+        replayFile.PerformanceGraphData = _reader.ReadString();
+        replayFile.ReplayDate = _reader.ReadDateTime();
+        replayFile.Replay = _reader.ReadByteArray();
         if (replayFile.Version >= 20140721)
-          replayFile.Long0 = ReplayHelper._reader.ReadInt64();
+          replayFile.Long0 = _reader.ReadInt64();
       }
+
       return replayFile;
     }
 
     public static void SaveFile(string filePath, ReplayFile replay)
     {
-      using (BeatmapWriter beatmapWriter = new BeatmapWriter((Stream)File.Open(filePath, FileMode.Create)))
+      using (ReplayWriter beatmapWriter = new ReplayWriter(File.Open(filePath, FileMode.Create)))
       {
         beatmapWriter.Write(replay.Mode);
         beatmapWriter.Write(replay.Version);
@@ -62,7 +63,7 @@ namespace RXHDDT.Util
         beatmapWriter.Write(replay.UsedMods);
         beatmapWriter.Write(replay.PerformanceGraphData);
         beatmapWriter.Write(replay.ReplayDate);
-        string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(','));
+        string[] list = Encoding.ASCII.GetString(SevenZipHelper.Decompress(replay.Replay)).Split(',');
         beatmapWriter.Write(replay.Replay);
         beatmapWriter.Write(replay.Long0);
       }
@@ -70,7 +71,7 @@ namespace RXHDDT.Util
 
     public static string GetReplayHash(ReplayFile replay)
     {
-      return OsuHelper.HashString(string.Format("{0}p{1}o{2}o{3}t{4}a{5}r{6}e{7}y{8}o{9}u{10}{11}{12}", (object)((int)replay.Count100 + (int)replay.Count300), (object)replay.Count50, (object)replay.CountGeki, (object)replay.CountKatu, (object)replay.CountMiss, (object)replay.BeatmapHash, (object)replay.MaxCombo, (object)replay.FullCombo, (object)replay.PlayerName, (object)replay.Score, (object)replay.Ranking, (object)replay.UsedMods, (object)replay.Passed));
+      return OsuHelper.HashString(string.Format("{0}p{1}o{2}o{3}t{4}a{5}r{6}e{7}y{8}o{9}u{10}{11}{12}", replay.Count100 + replay.Count300, replay.Count50, replay.CountGeki, replay.CountKatu, replay.CountMiss, replay.BeatmapHash, replay.MaxCombo, replay.FullCombo, replay.PlayerName, replay.Score, replay.Ranking, replay.UsedMods, replay.Passed));
     }
   }
 
@@ -100,20 +101,21 @@ namespace RXHDDT.Util
 
     public override string ToString()
     {
-      Type type = this.GetType();
+      Type type = GetType();
       FieldInfo[] fields = type.GetFields();
       PropertyInfo[] properties = type.GetProperties();
       ReplayFile user = this;
       Dictionary<string, object> values = new Dictionary<string, object>();
-      Array.ForEach<FieldInfo>(fields, (Action<FieldInfo>)(field => values.Add(field.Name, field.GetValue((object)user))));
-      Action<PropertyInfo> action = (Action<PropertyInfo>)(property =>
+      Array.ForEach(fields, field => values.Add(field.Name, field.GetValue(user)));
+      Action<PropertyInfo> action = property =>
       {
         if (!property.CanRead)
           return;
-        values.Add(property.Name, property.GetValue((object)user, (object[])null));
-      });
-      Array.ForEach<PropertyInfo>(properties, action);
-      return string.Join<KeyValuePair<string, object>>(", ", (IEnumerable<KeyValuePair<string, object>>)values);
+
+        values.Add(property.Name, property.GetValue(user, null));
+      };
+      Array.ForEach(properties, action);
+      return string.Join(", ", values);
     }
   }
 }
