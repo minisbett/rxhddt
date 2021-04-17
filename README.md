@@ -1,5 +1,5 @@
 # RXHDDT
-An osu replay editor to modify the mods from the command line. Only supports std mode mods.
+An easy-to-use osu replay editor to modify the mods from the command line. Only supports std mode replays.
 
 Thanks to the osu!ftw replay editor for providing code to read and write replays.
 
