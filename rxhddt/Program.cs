@@ -41,7 +41,7 @@ namespace RXHDDT
         ("Flashlight", "FL", 10, OsuHelper.Mods.Flashlight, '0'),
         ("Relax", "RL", 7, OsuHelper.Mods.Relax, 'a'),
         ("AutoPilot", "AP", 13, OsuHelper.Mods.AutoPilot, 'b'),
-        ("TargetPractice", "TP", 23, OsuHelper.Mods.TargetPractice, 'c'),
+        //("TargetPractice", "TP", 23, OsuHelper.Mods.TargetPractice, 'c'),
         ("SpunOut", "SO", 12, OsuHelper.Mods.SpunOut, 'd'),
         ("Autoplay", "AT", 11, OsuHelper.Mods.Autoplay, 'e'),
         ("Cinema", "CM", 22, OsuHelper.Mods.Cinema, 'f'),
